@@ -106,7 +106,7 @@ func (cs *ChunkStreamer) Read(cmsg *ChunkMessage) (int, uint32, error) {
 
 	cmsg.StreamID = reader.messageStreamID
 
-	return reader.basicHeader.chunkStreamID, uint32(reader.timestamp), nil
+	return reader.basicHeader.chunkStreamID, reader.timestamp, nil
 }
 
 func (cs *ChunkStreamer) Write(
@@ -243,7 +243,9 @@ func (cs *ChunkStreamer) readChunk() (*ChunkStreamReader, error) {
 
 	expectLen := int(reader.messageLength) - reader.buf.Len()
 	if expectLen <= 0 {
-		panic("invalid state") // TODO fix
+		//panic("invalid state") // TODO fix
+		reader.completed = false
+		return reader, nil
 	}
 
 	if uint32(expectLen) > cs.peerState.chunkSize {

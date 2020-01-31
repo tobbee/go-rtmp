@@ -44,3 +44,13 @@ type UserCtrlEventPingRequest struct {
 type UserCtrlEventPingResponse struct {
 	Timestamp uint32
 }
+
+// (unofficial) Buffer Empty (31)
+type UserCtrlEventBufferEmpty struct {
+	Value uint32
+}
+
+// (unofficial) Buffer Ready (32)
+type UserCtrlEventBufferReady struct {
+	Value uint32
+}

@@ -18,6 +18,8 @@ import (
 
 // ClientConn A wrapper of a connection. It prorives client-side specific features.
 type ClientConn struct {
+	Closed chan error
+
 	conn    *Conn
 	lastErr error
 	m       sync.RWMutex
@@ -38,10 +40,11 @@ func newClientConnWithSetup(c net.Conn, config *ConnConfig) (*ClientConn, error)
 	}
 	ctrlStream.handler.ChangeState(streamStateClientNotConnected)
 
-	conn.streamer.controlStreamWriter = ctrlStream.write
+	conn.streamer.controlStreamWriter = ctrlStream.Write
 
 	cc := &ClientConn{
-		conn: conn,
+		Closed: make(chan error, 1),
+		conn:   conn,
 	}
 	go cc.startHandleMessageLoop()
 
@@ -105,10 +108,28 @@ func (cc *ClientConn) CreateStream(body *message.NetConnectionConnect) (*Stream,
 	return newStream, nil
 }
 
+func (cc *ClientConn) StreamByID(streamID uint32) (*Stream, error) {
+	if err := cc.controllable(); err != nil {
+		return nil, err
+	}
+
+	stream, err := cc.conn.streams.At(streamID)
+	if err != nil {
+		newStream, err := cc.conn.streams.Create(streamID)
+		if err != nil {
+			return nil, err
+		}
+		stream = newStream
+	}
+
+	return stream, nil
+}
+
 func (cc *ClientConn) startHandleMessageLoop() {
 	if err := cc.conn.handleMessageLoop(); err != nil {
 		cc.setLastError(err)
 	}
+	cc.Closed <- cc.lastErr
 }
 
 func (cc *ClientConn) setLastError(err error) {

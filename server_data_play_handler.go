@@ -46,3 +46,12 @@ func (h *serverDataPlayHandler) onCommand(
 ) error {
 	return internal.ErrPassThroughMsg
 }
+
+func (h *serverDataPlayHandler) onWinAckSize(
+	chunkStreamID int,
+	timestamp uint32,
+	ackMsg *message.WinAckSize,
+) (err error) {
+	return nil
+}
+

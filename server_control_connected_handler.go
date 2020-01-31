@@ -148,6 +148,14 @@ func (h *serverControlConnectedHandler) onCommand(
 	}
 }
 
+func (h *serverControlConnectedHandler) onWinAckSize(
+	chunkStreamID int,
+	timestamp uint32,
+	ackMsg *message.WinAckSize,
+) (err error) {
+	return nil
+}
+
 func (h *serverControlConnectedHandler) newCreateStreamSuccessResult(
 	streamID uint32,
 ) *message.NetConnectionCreateStreamResult {

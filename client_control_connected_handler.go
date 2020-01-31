@@ -12,18 +12,18 @@ import (
 	"github.com/yutopp/go-rtmp/message"
 )
 
-var _ stateHandler = (*clientControlNotConnectedHandler)(nil)
+var _ stateHandler = (*clientControlConnectedHandler)(nil)
 
 // clientControlNotConnectedHandler Handle control messages from a server in flow of connecting.
 //   transitions:
 //     | "_result" -> controlStreamStateConnected
 //     | _         -> self
 //
-type clientControlNotConnectedHandler struct {
+type clientControlConnectedHandler struct {
 	sh *streamHandler
 }
 
-func (h *clientControlNotConnectedHandler) onMessage(
+func (h *clientControlConnectedHandler) onMessage(
 	chunkStreamID int,
 	timestamp uint32,
 	msg message.Message,
@@ -37,7 +37,7 @@ func (h *clientControlNotConnectedHandler) onMessage(
 	}
 }
 
-func (h *clientControlNotConnectedHandler) onData(
+func (h *clientControlConnectedHandler) onData(
 	chunkStreamID int,
 	timestamp uint32,
 	dataMsg *message.DataMessage,
@@ -46,27 +46,22 @@ func (h *clientControlNotConnectedHandler) onData(
 	return internal.ErrPassThroughMsg
 }
 
-func (h *clientControlNotConnectedHandler) onCommand(
+func (h *clientControlConnectedHandler) onCommand(
 	chunkStreamID int,
 	timestamp uint32,
 	cmdMsg *message.CommandMessage,
 	body interface{},
 ) error {
-	l := h.sh.Logger()
+	//l := h.sh.Logger()
 
-	switch cmd := body.(type) {
-	case *message.NetConnectionConnectResult:
-		l.Info("ConnectResult")
-		l.Infof("Result: Info = %+v, Props = %+v", cmd.Information, cmd.Properties)
-
-		return nil
+	switch body.(type) {
 
 	default:
 		return internal.ErrPassThroughMsg
 	}
 }
 
-func (h *clientControlNotConnectedHandler) onWinAckSize(
+func (h *clientControlConnectedHandler) onWinAckSize(
 	chunkStreamID int,
 	timestamp uint32,
 	ackMsg *message.WinAckSize,

@@ -10,6 +10,8 @@ package rtmp
 import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+	"log"
+	"runtime/debug"
 	"sync"
 
 	"github.com/yutopp/go-rtmp/internal"
@@ -27,6 +29,7 @@ const (
 	streamStateServerPlay
 	streamStateClientNotConnected
 	streamStateClientConnected
+	streamStateClientPlay
 )
 
 func (s streamState) String() string {
@@ -70,7 +73,14 @@ func newStreamHandler(s *Stream) *streamHandler {
 }
 
 func (h *streamHandler) Handle(chunkStreamID int, timestamp uint32, msg message.Message) error {
-	l := h.Logger()
+	//l := h.Logger()
+
+	defer func() {
+		if r := recover(); r != nil {
+			log.Println(h, h.stream, h.handler)
+			log.Println(string(debug.Stack()))
+		}
+	}()
 
 	switch msg := msg.(type) {
 	case *message.DataMessage:
@@ -80,12 +90,12 @@ func (h *streamHandler) Handle(chunkStreamID int, timestamp uint32, msg message.
 		return h.handleCommand(chunkStreamID, timestamp, msg)
 
 	case *message.SetChunkSize:
-		l.Infof("Handle SetChunkSize: Msg = %#v", msg)
+		//l.Infof("Handle SetChunkSize: Msg = %#v", msg)
 		return h.stream.streamer().PeerState().SetChunkSize(msg.ChunkSize)
 
 	case *message.WinAckSize:
-		l.Infof("Handle WinAckSize: Msg = %#v", msg)
-		return h.stream.streamer().PeerState().SetAckWindowSize(msg.Size)
+		//l.Infof("Handle WinAckSize: Msg = %#v", msg)
+		return h.handleWinAckSize(chunkStreamID, timestamp, msg)
 
 	default:
 		err := h.handler.onMessage(chunkStreamID, timestamp, msg)
@@ -100,7 +110,7 @@ func (h *streamHandler) ChangeState(state streamState) {
 	h.m.Lock()
 	defer h.m.Unlock()
 
-	prevState := h.State()
+	//prevState := h.State()
 
 	switch state {
 	case streamStateUnknown:
@@ -117,15 +127,17 @@ func (h *streamHandler) ChangeState(state streamState) {
 		h.handler = &serverDataPlayHandler{sh: h}
 	case streamStateClientNotConnected:
 		h.handler = &clientControlNotConnectedHandler{sh: h}
-		// 	case streamStateClientConnected:
-		// 		h.handler = &serverControlConnectedHandler{sh: h}
+	case streamStateClientConnected:
+		h.handler = &clientControlConnectedHandler{sh: h}
+	case streamStateClientPlay:
+		h.handler = &clientDataPlayHandler{sh: h}
 	default:
 		panic("Unexpected")
 	}
 	h.state = state
 
-	l := h.Logger()
-	l.Infof("Change state: From = %s, To = %s", prevState, h.State())
+	//l := h.Logger()
+	//l.Infof("Change state: From = %s, To = %s", prevState, h.State())
 }
 
 func (h *streamHandler) State() streamState {
@@ -159,7 +171,7 @@ func (h *streamHandler) handleData(
 
 	err := h.handler.onData(chunkStreamID, timestamp, dataMsg, value)
 	if err == internal.ErrPassThroughMsg {
-		return h.stream.userHandler().OnUnknownDataMessage(timestamp, dataMsg)
+		return h.stream.userHandler().OnUnknownDataMessage(chunkStreamID, timestamp, dataMsg, value)
 	}
 	return err
 }
@@ -172,19 +184,17 @@ func (h *streamHandler) handleCommand(
 	switch cmdMsg.CommandName {
 	case "_result", "_error":
 		t, err := h.stream.transactions.At(cmdMsg.TransactionID)
-		if err != nil {
-			return errors.Wrap(err, "Got response to the unexpected transaction")
+		if err == nil {
+			// Set result (NOTE: should use a mutex for it?)
+			t.Reply(cmdMsg.CommandName, cmdMsg.Encoding, cmdMsg.Body)
+
+			// Remove transacaction because this transaction is resolved
+			if err := h.stream.transactions.Delete(cmdMsg.TransactionID); err != nil {
+				return errors.Wrap(err, "Unexpected behavior: transaction is not found")
+			}
+
+			return nil
 		}
-
-		// Set result (NOTE: should use a mutex for it?)
-		t.Reply(cmdMsg.CommandName, cmdMsg.Encoding, cmdMsg.Body)
-
-		// Remove transacaction because this transaction is resolved
-		if err := h.stream.transactions.Delete(cmdMsg.TransactionID); err != nil {
-			return errors.Wrap(err, "Unexpected behavior: transaction is not found")
-		}
-
-		return nil
 
 		// TODO: Support onStatus
 	}
@@ -199,8 +209,20 @@ func (h *streamHandler) handleCommand(
 
 	err := h.handler.onCommand(chunkStreamID, timestamp, cmdMsg, value)
 	if err == internal.ErrPassThroughMsg {
-		return h.stream.userHandler().OnUnknownCommandMessage(timestamp, cmdMsg)
+		return h.stream.userHandler().OnUnknownCommandMessage(chunkStreamID, timestamp, cmdMsg, value)
 	}
 
 	return err
+}
+
+func (h *streamHandler) handleWinAckSize(
+	chunkStreamID int,
+	timestamp uint32,
+	ackMsg *message.WinAckSize,
+) error {
+	err := h.stream.streamer().PeerState().SetAckWindowSize(ackMsg.Size)
+	if err != nil {
+		return err
+	}
+	return h.handler.onWinAckSize(chunkStreamID, timestamp, ackMsg)
 }

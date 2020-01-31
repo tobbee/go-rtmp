@@ -45,6 +45,10 @@ func (dec *UserControlEventDecoder) Decode(msg *UserCtrlEvent) error {
 		return dec.decodePingRequest(msg)
 	case 7: // UserCtrlEventPingResponse
 		return dec.decodePingResponse(msg)
+	case 31: // (unofficial) Buffer Empty
+		return dec.decodeBufferEmpty(msg)
+	case 32: // (unofficial) Buffer Ready
+		return dec.decodeBufferReady(msg)
 	default:
 		return errors.Errorf("Unsupported type for UserCtrl: TypeID = %d", eventType)
 	}
@@ -152,6 +156,36 @@ func (dec *UserControlEventDecoder) decodePingResponse(msg *UserCtrlEvent) error
 
 	*msg = &UserCtrlEventPingResponse{
 		Timestamp: timestamp,
+	}
+
+	return nil
+}
+
+func (dec *UserControlEventDecoder) decodeBufferEmpty(msg *UserCtrlEvent) error {
+	buf := make([]byte, 4)
+	if _, err := io.ReadAtLeast(dec.r, buf, 4); err != nil {
+		return err
+	}
+
+	value := binary.BigEndian.Uint32(buf)
+
+	*msg = &UserCtrlEventBufferEmpty{
+		Value: value,
+	}
+
+	return nil
+}
+
+func (dec *UserControlEventDecoder) decodeBufferReady(msg *UserCtrlEvent) error {
+	buf := make([]byte, 4)
+	if _, err := io.ReadAtLeast(dec.r, buf, 4); err != nil {
+		return err
+	}
+
+	value := binary.BigEndian.Uint32(buf)
+
+	*msg = &UserCtrlEventBufferReady{
+		Value: value,
 	}
 
 	return nil

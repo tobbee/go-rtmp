@@ -24,19 +24,21 @@ const (
 
 //
 type NetConnectionConnect struct {
-	Command NetConnectionConnectCommand
+	Command   NetConnectionConnectCommand
+	Arguments []interface{}
 }
 
 type NetConnectionConnectCommand struct {
 	App            string       `mapstructure:"app" amf0:"app"`
-	Type           string       `mapstructure:"type" amf0:"type"`
 	FlashVer       string       `mapstructure:"flashVer" amf0:"flashVer"`
+	SWFURL         string       `mapstructure:"swfUrl" amf0:"swfUrl"`
 	TCURL          string       `mapstructure:"tcUrl" amf0:"tcUrl"`
 	Fpad           bool         `mapstructure:"fpad" amf0:"fpad"`
 	Capabilities   int          `mapstructure:"capabilities" amf0:"capabilities"`
 	AudioCodecs    int          `mapstructure:"audioCodecs" amf0:"audioCodecs"`
 	VideoCodecs    int          `mapstructure:"videoCodecs" amf0:"videoCodecs"`
 	VideoFunction  int          `mapstructure:"videoFunction" amf0:"videoFunction"`
+	PageURL        string       `mapstructure:"pageUrl" amf0:"pageUrl"`
 	ObjectEncoding EncodingType `mapstructure:"objectEncoding" amf0:"objectEncoding"`
 }
 
@@ -50,9 +52,7 @@ func (t *NetConnectionConnect) FromArgs(args ...interface{}) error {
 }
 
 func (t *NetConnectionConnect) ToArgs(ty EncodingType) ([]interface{}, error) {
-	return []interface{}{
-		t.Command,
-	}, nil
+	return append([]interface{}{t.Command}, t.Arguments...), nil
 }
 
 //

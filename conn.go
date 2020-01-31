@@ -160,7 +160,13 @@ func (c *Conn) runHandleMessageLoop() error {
 		default:
 			chunkStreamID, timestamp, err := c.streamer.Read(&cmsg)
 			if err != nil {
-				return err
+				switch err.(type) {
+				case *message.DecodeError:
+					c.logger.Warnln(err)
+					continue
+				default:
+					return err
+				}
 			}
 
 			if err := c.handleMessage(chunkStreamID, timestamp, &cmsg); err != nil {

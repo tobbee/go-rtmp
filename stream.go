@@ -36,24 +36,22 @@ func newStream(streamID uint32, conn *Conn) *Stream {
 		cmsg: ChunkMessage{
 			StreamID: streamID,
 		},
-
 		conn: conn,
 	}
 	s.handler = newStreamHandler(s)
-
 	return s
 }
 
 func (s *Stream) WriteWinAckSize(chunkStreamID int, timestamp uint32, msg *message.WinAckSize) error {
-	return s.write(chunkStreamID, timestamp, msg)
+	return s.Write(chunkStreamID, timestamp, msg)
 }
 
 func (s *Stream) WriteSetPeerBandwidth(chunkStreamID int, timestamp uint32, msg *message.SetPeerBandwidth) error {
-	return s.write(chunkStreamID, timestamp, msg)
+	return s.Write(chunkStreamID, timestamp, msg)
 }
 
 func (s *Stream) WriteUserCtrl(chunkStreamID int, timestamp uint32, msg *message.UserCtrl) error {
-	return s.write(chunkStreamID, timestamp, msg)
+	return s.Write(chunkStreamID, timestamp, msg)
 }
 
 func (s *Stream) Connect(
@@ -70,7 +68,7 @@ func (s *Stream) Connect(
 	}
 
 	chunkStreamID := 3 // TODO: fix
-	err = s.writeCommandMessage(
+	err = s.WriteCommandMessage(
 		chunkStreamID, 0, // Timestamp is 0
 		"connect",
 		transactionID,
@@ -101,6 +99,7 @@ func (s *Stream) Connect(
 			}
 		}
 
+		s.handler.ChangeState(streamStateClientConnected)
 		return result, nil
 	}
 
@@ -120,7 +119,7 @@ func (s *Stream) ReplyConnect(
 		commandName = "_error"
 	}
 
-	return s.writeCommandMessage(
+	return s.WriteCommandMessage(
 		chunkStreamID, timestamp,
 		commandName,
 		1, // 7.2.1.2, flow.6
@@ -142,7 +141,7 @@ func (s *Stream) CreateStream(
 	}
 
 	chunkStreamID := 3 // TODO: fix
-	err = s.writeCommandMessage(
+	err = s.WriteCommandMessage(
 		chunkStreamID, 0, // TODO: fix, Timestamp is 0
 		"createStream",
 		transactionID,
@@ -194,7 +193,7 @@ func (s *Stream) ReplyCreateStream(
 		}
 	}
 
-	return s.writeCommandMessage(
+	return s.WriteCommandMessage(
 		chunkStreamID, timestamp,
 		commandName,
 		transactionID,
@@ -210,7 +209,7 @@ func (s *Stream) Publish(
 	}
 
 	chunkStreamID := 3 // TODO: fix
-	return s.writeCommandMessage(
+	return s.WriteCommandMessage(
 		chunkStreamID, 0, // TODO: fix, Timestamp is 0
 		"publish",
 		int64(0), // Always 0, 7.2.2.6
@@ -223,10 +222,24 @@ func (s *Stream) NotifyStatus(
 	timestamp uint32,
 	body *message.NetStreamOnStatus,
 ) error {
-	return s.writeCommandMessage(
+	return s.WriteCommandMessage(
 		chunkStreamID, timestamp,
 		"onStatus",
 		0, // 7.2.2
+		body,
+	)
+}
+
+func (s *Stream) Play(
+	chunkStreamID int,
+	timestamp uint32,
+	body *message.NetStreamClientPlayMessage,
+) error {
+	s.handler.ChangeState(streamStateClientPlay)
+	return s.WriteCommandMessage(
+		chunkStreamID, timestamp,
+		"play",
+		0,
 		body,
 	)
 }
@@ -235,7 +248,7 @@ func (s *Stream) Close() error {
 	return nil // TODO: implement
 }
 
-func (s *Stream) writeCommandMessage(
+func (s *Stream) WriteCommandMessage(
 	chunkStreamID int,
 	timestamp uint32,
 	commandName string,
@@ -248,7 +261,7 @@ func (s *Stream) writeCommandMessage(
 		return err
 	}
 
-	return s.write(chunkStreamID, timestamp, &message.CommandMessage{
+	return s.Write(chunkStreamID, timestamp, &message.CommandMessage{
 		CommandName:   commandName,
 		TransactionID: transactionID,
 		Encoding:      s.encTy,
@@ -256,7 +269,7 @@ func (s *Stream) writeCommandMessage(
 	})
 }
 
-func (s *Stream) write(chunkStreamID int, timestamp uint32, msg message.Message) error {
+func (s *Stream) Write(chunkStreamID int, timestamp uint32, msg message.Message) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second) // TODO: Fix 5s
 	defer cancel()
 

@@ -16,6 +16,16 @@ import (
 	"github.com/yutopp/go-amf0"
 )
 
+type DecodeError struct {
+	error
+	TypeID  TypeID
+	Message *Message
+}
+
+func (de *DecodeError) Error() string {
+	return fmt.Sprint("packet decode error: ", de.error)
+}
+
 type Decoder struct {
 	r io.Reader
 }
@@ -30,7 +40,17 @@ func (dec *Decoder) Reset(r io.Reader) {
 	dec.r = r
 }
 
-func (dec *Decoder) Decode(typeID TypeID, msg *Message) error {
+func (dec *Decoder) Decode(typeID TypeID, msg *Message) (err error) {
+	defer func() {
+		if err != nil {
+			err = &DecodeError{
+				error:   err,
+				TypeID:  typeID,
+				Message: msg,
+			}
+		}
+	}()
+
 	switch typeID {
 	case TypeIDSetChunkSize:
 		return dec.decodeSetChunkSize(msg)
@@ -63,7 +83,7 @@ func (dec *Decoder) Decode(typeID TypeID, msg *Message) error {
 	case TypeIDAggregateMessage:
 		return dec.decodeAggregateMessage(msg)
 	default:
-		return fmt.Errorf("Unexpected message type(decode): ID = %d", typeID)
+		return fmt.Errorf("unexpected message type(decode): ID = %d", typeID)
 	}
 }
 

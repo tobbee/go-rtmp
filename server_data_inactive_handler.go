@@ -105,6 +105,14 @@ func (h *serverDataInactiveHandler) onCommand(
 	}
 }
 
+func (h *serverDataInactiveHandler) onWinAckSize(
+	chunkStreamID int,
+	timestamp uint32,
+	ackMsg *message.WinAckSize,
+) (err error) {
+	return nil
+}
+
 func (h *serverDataInactiveHandler) newOnStatus(
 	code message.NetStreamOnStatusCode,
 	description string,

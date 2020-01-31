@@ -61,3 +61,11 @@ func (h *serverDataPublishHandler) onCommand(
 ) error {
 	return internal.ErrPassThroughMsg
 }
+
+func (h *serverDataPublishHandler) onWinAckSize(
+	chunkStreamID int,
+	timestamp uint32,
+	ackMsg *message.WinAckSize,
+) (err error) {
+	return nil
+}

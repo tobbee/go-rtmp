@@ -112,6 +112,14 @@ func (h *serverControlNotConnectedHandler) onCommand(
 	}
 }
 
+func (h *serverControlNotConnectedHandler) onWinAckSize(
+	chunkStreamID int,
+	timestamp uint32,
+	ackMsg *message.WinAckSize,
+) (err error) {
+	return nil
+}
+
 func (h *serverControlNotConnectedHandler) newConnectSuccessResult() *message.NetConnectionConnectResult {
 	rPreset := h.sh.stream.conn.config.RPreset
 	if rPreset == nil {

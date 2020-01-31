@@ -12,23 +12,27 @@ import (
 	"github.com/yutopp/go-rtmp/message"
 )
 
-var _ stateHandler = (*clientControlNotConnectedHandler)(nil)
+var _ stateHandler = (*clientDataPlayHandler)(nil)
 
-// clientControlNotConnectedHandler Handle control messages from a server in flow of connecting.
+// clientDataPlayHandler Handle data messages from a server (NOT IMPLEMENTED).
 //   transitions:
-//     | "_result" -> controlStreamStateConnected
-//     | _         -> self
-//
-type clientControlNotConnectedHandler struct {
+//     | _ -> self
+type clientDataPlayHandler struct {
 	sh *streamHandler
 }
 
-func (h *clientControlNotConnectedHandler) onMessage(
+func (h *clientDataPlayHandler) onMessage(
 	chunkStreamID int,
 	timestamp uint32,
 	msg message.Message,
 ) error {
 	switch msg := msg.(type) {
+	case *message.AudioMessage:
+		return h.sh.stream.userHandler().OnAudio(timestamp, msg.Payload)
+
+	case *message.VideoMessage:
+		return h.sh.stream.userHandler().OnVideo(timestamp, msg.Payload)
+
 	case *message.UserCtrl:
 		return h.sh.stream.userHandler().OnUserCtrlEvent(timestamp, msg.Event)
 
@@ -37,7 +41,7 @@ func (h *clientControlNotConnectedHandler) onMessage(
 	}
 }
 
-func (h *clientControlNotConnectedHandler) onData(
+func (h *clientDataPlayHandler) onData(
 	chunkStreamID int,
 	timestamp uint32,
 	dataMsg *message.DataMessage,
@@ -46,30 +50,19 @@ func (h *clientControlNotConnectedHandler) onData(
 	return internal.ErrPassThroughMsg
 }
 
-func (h *clientControlNotConnectedHandler) onCommand(
+func (h *clientDataPlayHandler) onCommand(
 	chunkStreamID int,
 	timestamp uint32,
 	cmdMsg *message.CommandMessage,
 	body interface{},
 ) error {
-	l := h.sh.Logger()
-
-	switch cmd := body.(type) {
-	case *message.NetConnectionConnectResult:
-		l.Info("ConnectResult")
-		l.Infof("Result: Info = %+v, Props = %+v", cmd.Information, cmd.Properties)
-
-		return nil
-
-	default:
-		return internal.ErrPassThroughMsg
-	}
+	return internal.ErrPassThroughMsg
 }
 
-func (h *clientControlNotConnectedHandler) onWinAckSize(
+func (h *clientDataPlayHandler) onWinAckSize(
 	chunkStreamID int,
 	timestamp uint32,
 	ackMsg *message.WinAckSize,
-) error {
-	return h.sh.stream.WriteWinAckSize(chunkStreamID, 0, ackMsg)
+) (err error) {
+	return nil
 }

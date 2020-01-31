@@ -16,7 +16,11 @@ import (
 type BodyDecoderFunc func(r io.Reader, e AMFDecoder, v *AMFConvertible) error
 
 var DataBodyDecoders = map[string]BodyDecoderFunc{
-	"@setDataFrame": DecodeBodyAtSetDataFrame,
+	"@setDataFrame":     DecodeDataBodyAtSetDataFrame,
+	"|RtmpSampleAccess": DecodeDataBodyRtmpSampleAccess,
+	"onStatus":          DecodeDataBodyOnStatus,
+	"onMetaData":        DecodeDataBodyOnMetaData,
+	"onSDES":            DecodeDataBodyOnSDES,
 }
 
 func DataBodyDecoderFor(name string) BodyDecoderFunc {
@@ -42,7 +46,7 @@ func DataBodyDecoderFor(name string) BodyDecoderFunc {
 	}
 }
 
-func DecodeBodyAtSetDataFrame(r io.Reader, _ AMFDecoder, v *AMFConvertible) error {
+func DecodeDataBodyAtSetDataFrame(r io.Reader, _ AMFDecoder, v *AMFConvertible) error {
 	buf := new(bytes.Buffer)
 	if _, err := io.Copy(buf, r); err != nil {
 		return errors.Wrap(err, "Failed to decode '@setDataFrame' args[0]")
@@ -51,6 +55,75 @@ func DecodeBodyAtSetDataFrame(r io.Reader, _ AMFDecoder, v *AMFConvertible) erro
 	var cmd NetStreamSetDataFrame
 	if err := cmd.FromArgs(buf.Bytes()); err != nil {
 		return errors.Wrap(err, "Failed to reconstruct '@setDataFrame'")
+	}
+
+	*v = &cmd
+
+	return nil
+}
+
+func DecodeDataBodyRtmpSampleAccess(_ io.Reader, d AMFDecoder, v *AMFConvertible) error {
+	var arg1 interface{}
+	if err := d.Decode(&arg1); err != nil {
+		return errors.Wrap(err, "Failed to decode data '|RtmpSampleAccess' args[0]")
+	}
+
+	var arg2 interface{}
+	if err := d.Decode(&arg2); err != nil {
+		return errors.Wrap(err, "Failed to decode data '|RtmpSampleAccess' args[1]")
+	}
+
+	var cmd NetStreamRtmpSampleAccess
+	if err := cmd.FromArgs(arg1, arg2); err != nil {
+		return errors.Wrap(err, "Failed to reconstruct data '|RtmpSampleAccess'")
+	}
+
+	*v = &cmd
+
+	return nil
+}
+
+func DecodeDataBodyOnStatus(_ io.Reader, d AMFDecoder, v *AMFConvertible) error {
+	var commandObject interface{}
+	if err := d.Decode(&commandObject); err != nil {
+		return errors.Wrap(err, "Failed to decode data 'onStatus' args[0]")
+	}
+
+	var cmd NetStreamOnStatus
+	if err := cmd.FromArgs(commandObject); err != nil {
+		return errors.Wrap(err, "Failed to reconstruct data 'onStatus'")
+	}
+
+	*v = &cmd
+
+	return nil
+}
+
+func DecodeDataBodyOnMetaData(_ io.Reader, d AMFDecoder, v *AMFConvertible) error {
+	var commandObject interface{} // maybe nil
+	if err := d.Decode(&commandObject); err != nil {
+		return errors.Wrap(err, "Failed to decode 'onMetaData' args[0]")
+	}
+
+	var cmd NetStreamOnMetaData
+	if err := cmd.FromArgs(commandObject); err != nil {
+		return errors.Wrap(err, "Failed to reconstruct 'onMetaData'")
+	}
+
+	*v = &cmd
+
+	return nil
+}
+
+func DecodeDataBodyOnSDES(_ io.Reader, d AMFDecoder, v *AMFConvertible) error {
+	var commandObject map[string]interface{}
+	if err := d.Decode(&commandObject); err != nil {
+		return errors.Wrap(err, "Failed to decode 'onSDES' args[0]")
+	}
+
+	var cmd NetStreamOnSDES
+	if err := cmd.FromArgs(commandObject); err != nil {
+		return errors.Wrap(err, "Failed to reconstruct 'onSDES'")
 	}
 
 	*v = &cmd
@@ -70,6 +143,8 @@ var CmdBodyDecoders = map[string]BodyDecoderFunc{
 	"getStreamLength": DecodeBodyGetStreamLength,
 	"ping":            DecodeBodyPing,
 	"closeStream":     DecodeBodyCloseStream,
+	"onStatus":        DecodeBodyOnStatus,
+	"onMetaData":      DecodeDataBodyOnMetaData,
 }
 
 func CmdBodyDecoderFor(name string, transactionID int64) BodyDecoderFunc {
@@ -342,6 +417,27 @@ func DecodeBodyCloseStream(_ io.Reader, d AMFDecoder, v *AMFConvertible) error {
 	var cmd NetStreamCloseStream
 	if err := cmd.FromArgs(commandObject); err != nil {
 		return errors.Wrap(err, "Failed to reconstruct 'closeStream'")
+	}
+
+	*v = &cmd
+
+	return nil
+}
+
+func DecodeBodyOnStatus(_ io.Reader, d AMFDecoder, v *AMFConvertible) error {
+	var null interface{}
+	if err := d.Decode(&null); err != nil {
+		return errors.Wrap(err, "Failed to decode 'onStatus' null arg")
+	}
+
+	var commandObject interface{}
+	if err := d.Decode(&commandObject); err != nil {
+		return errors.Wrap(err, "Failed to decode 'onStatus' args[0]")
+	}
+
+	var cmd NetStreamOnStatus
+	if err := cmd.FromArgs(commandObject); err != nil {
+		return errors.Wrap(err, "Failed to reconstruct 'onStatus'")
 	}
 
 	*v = &cmd

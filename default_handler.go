@@ -64,15 +64,19 @@ func (h *DefaultHandler) OnVideo(timestamp uint32, payload io.Reader) error {
 	return nil
 }
 
+func (h *DefaultHandler) OnUserCtrlEvent(timestamp uint32, event message.UserCtrlEvent) error {
+	return nil
+}
+
 func (h *DefaultHandler) OnUnknownMessage(timestamp uint32, msg message.Message) error {
 	return nil
 }
 
-func (h *DefaultHandler) OnUnknownCommandMessage(timestamp uint32, cmd *message.CommandMessage) error {
+func (h *DefaultHandler) OnUnknownCommandMessage(chunkStreamID int, timestamp uint32, cmdMsg *message.CommandMessage, body interface{}) error {
 	return nil
 }
 
-func (h *DefaultHandler) OnUnknownDataMessage(timestamp uint32, data *message.DataMessage) error {
+func (h *DefaultHandler) OnUnknownDataMessage(chunkStreamID int, timestamp uint32, dataMsg *message.DataMessage, body interface{}) error {
 	return nil
 }
 
