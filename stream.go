@@ -14,7 +14,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"time"
 
-	"github.com/yutopp/go-rtmp/message"
+	"github.com/encounter/go-rtmp/message"
 )
 
 // Stream represents a logical message stream

@@ -16,7 +16,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/yutopp/go-rtmp/message"
+	"github.com/encounter/go-rtmp/message"
 )
 
 const ctrlMsgChunkStreamID = 2

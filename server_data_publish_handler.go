@@ -8,8 +8,8 @@
 package rtmp
 
 import (
-	"github.com/yutopp/go-rtmp/internal"
-	"github.com/yutopp/go-rtmp/message"
+	"github.com/encounter/go-rtmp/internal"
+	"github.com/encounter/go-rtmp/message"
 )
 
 var _ stateHandler = (*serverDataPublishHandler)(nil)

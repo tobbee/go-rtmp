@@ -19,7 +19,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/yutopp/go-rtmp/message"
+	"github.com/encounter/go-rtmp/message"
 )
 
 func TestStreamerSingleChunk(t *testing.T) {

@@ -11,7 +11,7 @@ import (
 	"fmt"
 	"github.com/pkg/errors"
 
-	"github.com/yutopp/go-rtmp/message"
+	"github.com/encounter/go-rtmp/message"
 )
 
 var ErrClosed = errors.New("Server is closed")

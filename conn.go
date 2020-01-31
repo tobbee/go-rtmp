@@ -17,7 +17,7 @@ import (
 	"io/ioutil"
 	"sync"
 
-	"github.com/yutopp/go-rtmp/message"
+	"github.com/encounter/go-rtmp/message"
 )
 
 type Conn struct {

@@ -12,8 +12,8 @@ import (
 	"net"
 	"sync"
 
-	"github.com/yutopp/go-rtmp/handshake"
-	"github.com/yutopp/go-rtmp/message"
+	"github.com/encounter/go-rtmp/handshake"
+	"github.com/encounter/go-rtmp/message"
 )
 
 // ClientConn A wrapper of a connection. It prorives client-side specific features.

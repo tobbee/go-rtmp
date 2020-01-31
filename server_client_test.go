@@ -16,7 +16,7 @@ import (
 	"net"
 	"testing"
 
-	"github.com/yutopp/go-rtmp/message"
+	"github.com/encounter/go-rtmp/message"
 )
 
 func TestServerCanAcceptConnect(t *testing.T) {

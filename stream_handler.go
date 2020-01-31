@@ -14,8 +14,8 @@ import (
 	"runtime/debug"
 	"sync"
 
-	"github.com/yutopp/go-rtmp/internal"
-	"github.com/yutopp/go-rtmp/message"
+	"github.com/encounter/go-rtmp/internal"
+	"github.com/encounter/go-rtmp/message"
 )
 
 type streamState int
