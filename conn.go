@@ -129,6 +129,10 @@ func (c *Conn) Close() error {
 		result = multierror.Append(result, err)
 	}
 
+	if c.handler != nil {
+		c.handler.AfterClose()
+	}
+
 	return result
 }
 

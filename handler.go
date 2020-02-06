@@ -30,4 +30,5 @@ type Handler interface {
 	OnUnknownCommandMessage(chunkStreamID int, timestamp uint32, cmdMsg *message.CommandMessage, body interface{}) error
 	OnUnknownDataMessage(chunkStreamID int, timestamp uint32, dataMsg *message.DataMessage, body interface{}) error
 	OnClose()
+	AfterClose()
 }

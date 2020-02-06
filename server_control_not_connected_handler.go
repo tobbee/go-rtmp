@@ -69,7 +69,7 @@ func (h *serverControlNotConnectedHandler) onCommand(
 		}
 
 		l.Infof("Set win ack size: Size = %+v", h.sh.stream.streamer().SelfState().AckWindowSize())
-		if err := h.sh.stream.WriteWinAckSize(ctrlMsgChunkStreamID, timestamp, &message.WinAckSize{
+		if err := h.sh.stream.WriteWinAckSize(CtrlMsgChunkStreamID, timestamp, &message.WinAckSize{
 			Size: h.sh.stream.streamer().SelfState().AckWindowSize(),
 		}); err != nil {
 			return err
@@ -79,7 +79,7 @@ func (h *serverControlNotConnectedHandler) onCommand(
 			h.sh.stream.streamer().SelfState().BandwidthWindowSize(),
 			h.sh.stream.streamer().SelfState().BandwidthLimitType(),
 		)
-		if err := h.sh.stream.WriteSetPeerBandwidth(ctrlMsgChunkStreamID, timestamp, &message.SetPeerBandwidth{
+		if err := h.sh.stream.WriteSetPeerBandwidth(CtrlMsgChunkStreamID, timestamp, &message.SetPeerBandwidth{
 			Size:  h.sh.stream.streamer().SelfState().BandwidthWindowSize(),
 			Limit: h.sh.stream.streamer().SelfState().BandwidthLimitType(),
 		}); err != nil {
@@ -87,7 +87,7 @@ func (h *serverControlNotConnectedHandler) onCommand(
 		}
 
 		l.Infof("Stream Begin: ID = %d", h.sh.stream.streamID)
-		if err := h.sh.stream.WriteUserCtrl(ctrlMsgChunkStreamID, timestamp, &message.UserCtrl{
+		if err := h.sh.stream.WriteUserCtrl(CtrlMsgChunkStreamID, timestamp, &message.UserCtrl{
 			Event: &message.UserCtrlEventStreamBegin{
 				StreamID: h.sh.stream.streamID,
 			},

@@ -82,3 +82,6 @@ func (h *DefaultHandler) OnUnknownDataMessage(chunkStreamID int, timestamp uint3
 
 func (h *DefaultHandler) OnClose() {
 }
+
+func (h *DefaultHandler) AfterClose() {
+}

@@ -19,7 +19,7 @@ import (
 	"github.com/encounter/go-rtmp/message"
 )
 
-const ctrlMsgChunkStreamID = 2
+const CtrlMsgChunkStreamID = 2
 
 const maxWriterQueueSize = 64
 
@@ -423,7 +423,7 @@ func (cs *ChunkStreamer) prepareChunkWriter(chunkStreamID int) (*ChunkStreamWrit
 func (cs *ChunkStreamer) sendAck(readBytes uint32) error {
 	cs.logger.Debugf("Sending Ack...: Bytes = %d", readBytes)
 	// TODO: fix timestamp
-	return cs.controlStreamWriter(ctrlMsgChunkStreamID, 0, &message.Ack{
+	return cs.controlStreamWriter(CtrlMsgChunkStreamID, 0, &message.Ack{
 		SequenceNumber: readBytes,
 	})
 }
