@@ -8,14 +8,15 @@
 package rtmp
 
 import (
-	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
 	"log"
 	"runtime/debug"
 	"sync"
 
-	"github.com/encounter/go-rtmp/internal"
-	"github.com/encounter/go-rtmp/message"
+	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
+
+	"github.com/tobbee/go-rtmp/internal"
+	"github.com/tobbee/go-rtmp/message"
 )
 
 type streamState int

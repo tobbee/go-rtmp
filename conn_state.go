@@ -10,8 +10,8 @@ package rtmp
 import (
 	"math"
 
-	"github.com/encounter/go-rtmp/message"
 	"github.com/pkg/errors"
+	"github.com/tobbee/go-rtmp/message"
 )
 
 const DefaultChunkSize = 128

@@ -5,7 +5,7 @@ import (
 	"net"
 
 	log "github.com/sirupsen/logrus"
-	"github.com/encounter/go-rtmp"
+	"github.com/tobbee/go-rtmp"
 )
 
 func main() {

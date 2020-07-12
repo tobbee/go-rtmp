@@ -4,7 +4,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/encounter/go-rtmp"
-	rtmpmsg "github.com/encounter/go-rtmp/message"
+	rtmpmsg "github.com/tobbee/go-rtmp/message"
 )
 
 func main() {

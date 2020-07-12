@@ -8,12 +8,13 @@
 package rtmp
 
 import (
-	"github.com/pkg/errors"
 	"net"
 	"sync"
 
-	"github.com/encounter/go-rtmp/handshake"
-	"github.com/encounter/go-rtmp/message"
+	"github.com/pkg/errors"
+
+	"github.com/tobbee/go-rtmp/handshake"
+	"github.com/tobbee/go-rtmp/message"
 )
 
 // ClientConn A wrapper of a connection. It prorives client-side specific features.

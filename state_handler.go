@@ -8,7 +8,7 @@
 package rtmp
 
 import (
-	"github.com/encounter/go-rtmp/message"
+	"github.com/tobbee/go-rtmp/message"
 )
 
 type stateHandler interface {

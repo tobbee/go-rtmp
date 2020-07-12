@@ -12,14 +12,15 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"github.com/fortytw2/leaktest"
-	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"strings"
 	"testing"
 	"time"
 
-	"github.com/encounter/go-rtmp/message"
+	"github.com/fortytw2/leaktest"
+	"github.com/stretchr/testify/assert"
+
+	"github.com/tobbee/go-rtmp/message"
 )
 
 func TestStreamerSingleChunk(t *testing.T) {

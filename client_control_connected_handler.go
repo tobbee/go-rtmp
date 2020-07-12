@@ -8,8 +8,8 @@
 package rtmp
 
 import (
-	"github.com/encounter/go-rtmp/internal"
-	"github.com/encounter/go-rtmp/message"
+	"github.com/tobbee/go-rtmp/internal"
+	"github.com/tobbee/go-rtmp/message"
 )
 
 var _ stateHandler = (*clientControlConnectedHandler)(nil)

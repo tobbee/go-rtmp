@@ -9,9 +9,10 @@ package rtmp
 
 import (
 	"fmt"
+
 	"github.com/pkg/errors"
 
-	"github.com/encounter/go-rtmp/message"
+	"github.com/tobbee/go-rtmp/message"
 )
 
 var ErrClosed = errors.New("Server is closed")

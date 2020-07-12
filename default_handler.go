@@ -8,8 +8,9 @@
 package rtmp
 
 import (
-	"github.com/encounter/go-rtmp/message"
 	"io"
+
+	"github.com/tobbee/go-rtmp/message"
 )
 
 var _ Handler = (*DefaultHandler)(nil)
